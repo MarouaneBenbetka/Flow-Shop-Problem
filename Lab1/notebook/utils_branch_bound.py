@@ -5,6 +5,7 @@ import numpy as np
 import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import itertools
 
 
 
@@ -66,6 +67,29 @@ class Node(object):
         return ""
 
 
+def johnson_method(processing_times):
+    jobs, machines = processing_times.shape
+    copy_processing_times = processing_times.copy()
+    maximum = processing_times.max() + 1
+    m1 = []
+    m2 = []
+
+    if machines != 2:
+        raise Exception("Johson method only works with two machines")
+
+    for i in range(jobs):
+        minimum = copy_processing_times.min()
+        position = np.where(copy_processing_times == minimum)
+
+        if position[1][0] == 0:
+            m1.append(position[0][0])
+        else:
+            m2.insert(0, position[0][0])
+
+        copy_processing_times[position[0][0]] = maximum
+
+    return m1 + m2
+
 class FlowShopBranchBoundSolver(object):
 
     def __init__(self):
@@ -124,10 +148,16 @@ class FlowShopBranchBoundSolver(object):
         # there is a ready formula that we can use directly
         return 0
 
-    def johnson_method(self):
-        machines, jobs = self.current_instance.shape
-        copy_instance = self.current_instance.copy().T
-        maximum = self.current_instance.max() + 1
+    def johnson_method(self, instance):
+        # machines, jobs = self.current_instance.shape
+        # copy_instance = self.current_instance.copy().T
+        # maximum = self.current_instance.max() + 1
+        print('instance shape:', instance.shape)
+        # machines, jobs = instance.shape
+        jobs, machines = instance.shape
+        copy_instance = instance.copy().T
+        maximum = instance.max() + 1
+
         m1 = []
         m2 = []
 
@@ -183,8 +213,13 @@ class FlowShopBranchBoundSolver(object):
 
         return children
 
-    def generate_gantt_chart(self):
-        solution = self.initial_solution
+    def all_permutations(self, iterable):
+        permutations = list(itertools.permutations(iterable))
+        permutations_as_lists = [list(p) for p in permutations]
+        return permutations_as_lists
+
+    def generate_gantt_chart(self, solution):
+        plt.figure(figsize=(20, 12))
         df = pd.DataFrame(columns=['Machine', 'Job', 'Start', 'Finish'])
 
         machines, jobs = self.current_instance.shape
@@ -215,6 +250,8 @@ class FlowShopBranchBoundSolver(object):
         plt.xlabel('Time')
         plt.yticks([i * 10 + 4.5 for i in range(machines)], [f'Machine {i + 1}' for i in range(machines)])
         plt.show()
+
+
 
     def solve(self, initial_solution):
         # create the root node and append it to the list of active nodes\
