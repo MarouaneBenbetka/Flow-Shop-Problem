@@ -2,7 +2,12 @@ import math
 
 import pandas as pd
 import numpy as np
+import itertools
 
+
+'''
+Reading the data from the benchmark file
+'''
 
 def read_flow_shop_data(file_path, machine_count, job_count):
     instances = []
@@ -30,6 +35,46 @@ def read_flow_shop_data(file_path, machine_count, job_count):
             instances.append(record)
 
     return instances
+
+
+
+'''
+Creating the permutation of the jobs to enumerate all the possible solutions
+'''
+
+def all_permutations(iterable):
+    permutations = list(itertools.permutations(iterable))
+    permutations_as_lists = [list(p) for p in permutations]
+    return permutations_as_lists
+
+
+'''
+THIS IS THE HEuRISTIC OF JOHNSON 
+'''
+
+
+def johnson_method(processing_times):
+    jobs, machines = processing_times.shape
+    copy_processing_times = processing_times.copy()
+    maximum = processing_times.max() + 1
+    m1 = []
+    m2 = []
+    
+    if machines != 2:
+        raise Exception("Johson method only works with two machines")
+        
+    for i in range(jobs):
+        minimum = copy_processing_times.min()
+        position = np.where(copy_processing_times == minimum)
+        
+        if position[1][0] == 0:
+            m1.append(position[0][0])
+        else:
+            m2.insert(0, position[0][0])
+        
+        copy_processing_times[position[0][0]] = maximum
+        
+    return m1+m2
 
 
 """
@@ -67,6 +112,7 @@ class FlowShopBranchBoundSolver(object):
         self.order_heuristic = None
         self.evaluation = None
         self.intial_solution = None
+        self.incremental_cost = None
 
     def consider_instance(self, instance):
         self.current_instance = instance
@@ -109,7 +155,7 @@ class FlowShopBranchBoundSolver(object):
 
         # print(incremental_cost[nb_machines - 1, nb_jobs - 1])
 
-        return incremental_cost[nb_machines - 1, nb_jobs - 1]
+        return incremental_cost[nb_machines - 1, nb_jobs - 1], incremental_cost
 
     def compute_upper_bound(self, partial_path):
         # use the processing times matrix to compute the upper bound value
@@ -125,7 +171,7 @@ class FlowShopBranchBoundSolver(object):
             # print("child remainign jobs",child_remaining_jobs)
             # print("partial job order", child_job_order)
             
-            child_cost = self.compute_lower_bound(child_job_order)
+            child_cost, self.incremental_cost = self.compute_lower_bound(child_job_order)
 
             if (len(child_remaining_jobs) == 0):
                 if (child_cost < self.bound):
@@ -158,7 +204,7 @@ class FlowShopBranchBoundSolver(object):
         # create the root node and append it to the list of active nodes\
         
         self.intial_solution = initial_solution
-        initial_bound = self.compute_lower_bound(initial_solution)
+        initial_bound, self.incremental_cost = self.compute_lower_bound(initial_solution)
         
         
         
