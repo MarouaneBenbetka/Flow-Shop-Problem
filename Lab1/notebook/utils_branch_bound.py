@@ -114,6 +114,7 @@ class FlowShopBranchBoundSolver(object):
         # print("called function with partial path : ", partial_path)
         # compute the value of the lower bound from the instance matrix
         # there is a ready formula that we can use directly
+            
 
         nb_jobs = len(partial_path)
         nb_machines = self.current_instance.shape[0]        
@@ -142,6 +143,32 @@ class FlowShopBranchBoundSolver(object):
         # print(incremental_cost[nb_machines - 1, nb_jobs - 1])
 
         return incremental_cost[nb_machines - 1, nb_jobs - 1]
+    
+    
+    def H(self,partial_path,remaining_jobs):
+        
+        nb_jobs = self.current_instance.shape[1]      
+        nb_machines = self.current_instance.shape[0]   
+        
+        LBi = 0   
+        
+        for i in range(nb_machines):
+        
+        #    bi = np.min(np.sum(self.current_instance[:i, partial_path], axis=0))
+            if len(remaining_jobs) > 0:
+                ai = np.min(np.sum(self.current_instance[i+1:, list(remaining_jobs)], axis=0))
+                Ti = np.sum(self.current_instance[i:i+1, list(remaining_jobs)],axis=1)[0]
+            
+                new_lbi = ai + Ti
+                # print(bi, "bi")
+                # print(ai, "ai")
+                # print(Ti, "Ti")
+                # print(new_lbi, "new_lbi")
+                
+                LBi = max(LBi,new_lbi)
+        
+    
+        return LBi
 
     def compute_upper_bound(self, partial_path):
         # use the processing times matrix to compute the upper bound value
@@ -185,7 +212,7 @@ class FlowShopBranchBoundSolver(object):
             # print("child remainign jobs",child_remaining_jobs)
             # print("partial job order", child_job_order)
             
-            child_cost = self.compute_lower_bound(child_job_order)
+            child_cost = self.compute_lower_bound(child_job_order) + self.H(child_job_order,child_remaining_jobs)
 
             if (len(child_remaining_jobs) == 0):
                 if (child_cost < self.bound):
