@@ -2,6 +2,10 @@ import math
 
 import pandas as pd
 import numpy as np
+import plotly.express as px
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
 
 
 def read_flow_shop_data(file_path, machine_count, job_count):
@@ -116,6 +120,28 @@ class FlowShopBranchBoundSolver(object):
         # there is a ready formula that we can use directly
         return 0
 
+    def johnson_method(self):
+        machines, jobs = self.current_instance.shape
+        copy_instance = self.current_instance.copy().T
+        maximum = self.current_instance.max() + 1
+        m1 = []
+        m2 = []
+        
+        if machines != 2:
+            raise Exception("Johson method only works with two machines")
+            
+        for i in range(jobs):
+            minimum = copy_instance.min()
+            position = np.where(copy_instance == minimum)
+            
+            if position[1][0] == 0:
+                m1.append(position[0][0])
+            else:
+                m2.insert(0, position[0][0])
+            
+            copy_instance[position[0][0]] = maximum
+        return m1+m2
+    
     def generate_children(self, node):
         children = []
         for n in node.remaining_jobs:
@@ -153,12 +179,45 @@ class FlowShopBranchBoundSolver(object):
 
         return children
 
-    
-    def solve(self, initial_solution):
+    def generate_gantt_chart(self, solution):
+        df = pd.DataFrame(columns=['Machine', 'Job', 'Start', 'Finish'])
+
+        machines, jobs = self.current_instance.shape
+        machine_times = np.zeros((machines, jobs))
+        start_time_m = np.zeros(machines)
+        for job in solution:
+
+            for machine_index in range(machines):
+                start_time = start_time_m[machine_index]
+                if machine_index > 0:
+                    start_time = max(start_time, start_time_m[machine_index-1])
+                end_time = start_time + self.current_instance[machine_index, job]
+                start_time_m[machine_index] = end_time
+                
+                df = pd.concat([df, pd.DataFrame({'Machine': f'Machine {machine_index + 1}',
+                                   'Job': f'Job {job + 1}',
+                                   'Start': start_time,
+                                   'Finish': end_time}, index=[0])], ignore_index=True)
+
+
+                machine_times[machine_index, job] = end_time
+
+
+        colors = plt.cm.tab10.colors
+        for i, machine_index in enumerate(range(machines)):
+            machine_df = df[df['Machine'] == f'Machine {machine_index + 1}']
+            plt.broken_barh([(start, end - start) for start, end in zip(machine_df['Start'], machine_df['Finish'])],
+                             (i * 10, 9), facecolors=[colors[j % 10] for j in range(jobs)], edgecolor='black')
+
+        plt.xlabel('Time')
+        plt.yticks([i * 10 + 4.5 for i in range(machines)], [f'Machine {i + 1}' for i in range(machines)])
+        plt.show()
+
+    def solve(self):
         # create the root node and append it to the list of active nodes\
         
-        self.intial_solution = initial_solution
-        initial_bound = self.compute_lower_bound(initial_solution)
+        self.initial_solution = self.johnson_method()
+        initial_bound = self.compute_lower_bound(self.initial_solution)
         
         
         
@@ -181,4 +240,6 @@ class FlowShopBranchBoundSolver(object):
             
             current_node.childre_nodes = children
             self.active_nodes.extend(children)
-        
+        print("Optimal Solution:", self.intial_solution)
+        print("Optimal Cost:", self.bound)
+        self.generate_gantt_chart(self.intial_solution)
