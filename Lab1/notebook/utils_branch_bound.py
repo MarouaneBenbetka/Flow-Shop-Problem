@@ -179,7 +179,8 @@ class FlowShopBranchBoundSolver(object):
 
         return children
 
-    def generate_gantt_chart(self, solution):
+    def generate_gantt_chart(self):
+        solution = self.initial_solution
         df = pd.DataFrame(columns=['Machine', 'Job', 'Start', 'Finish'])
 
         machines, jobs = self.current_instance.shape
@@ -199,9 +200,7 @@ class FlowShopBranchBoundSolver(object):
                                    'Start': start_time,
                                    'Finish': end_time}, index=[0])], ignore_index=True)
 
-
                 machine_times[machine_index, job] = end_time
-
 
         colors = plt.cm.tab10.colors
         for i, machine_index in enumerate(range(machines)):
@@ -213,11 +212,11 @@ class FlowShopBranchBoundSolver(object):
         plt.yticks([i * 10 + 4.5 for i in range(machines)], [f'Machine {i + 1}' for i in range(machines)])
         plt.show()
 
-    def solve(self):
+    def solve(self, initial_solution):
         # create the root node and append it to the list of active nodes\
         
-        self.initial_solution = self.johnson_method()
-        initial_bound = self.compute_lower_bound(self.initial_solution)
+        # self.initial_solution = self.johnson_method()
+        initial_bound = self.compute_lower_bound(initial_solution)
         
         
         
@@ -242,4 +241,4 @@ class FlowShopBranchBoundSolver(object):
             self.active_nodes.extend(children)
         print("Optimal Solution:", self.intial_solution)
         print("Optimal Cost:", self.bound)
-        self.generate_gantt_chart(self.intial_solution)
+        # self.generate_gantt_chart(self.intial_solution)
