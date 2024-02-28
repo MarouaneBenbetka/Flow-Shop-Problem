@@ -128,7 +128,7 @@ class FlowShopBranchBoundSolver(object):
         incremental_cost[0, 0] = self.current_instance[0][partial_path[0] ]
 
         for i in range(1, nb_jobs):
-            incremental_cost[0][i] = incremental_cost[0][i - 1 ] + self.current_instance[0][i]
+            incremental_cost[0][i] = incremental_cost[0][i - 1 ] + self.current_instance[0][partial_path[i]]
 
         # evaluate the rest of machines
         for i in range(1, nb_machines):
@@ -212,6 +212,9 @@ class FlowShopBranchBoundSolver(object):
                 children.append(current_child)
 
         return children
+    
+    
+
 
     def all_permutations(self, iterable):
         permutations = list(itertools.permutations(iterable))
