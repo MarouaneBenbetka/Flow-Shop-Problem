@@ -228,3 +228,34 @@ def PRSKE(processing_times):
     makespan = calculate_makespan(processing_times, sequence)
 
     return sequence,  makespan
+
+
+# ---------------------------------#
+
+# GUPTA
+
+def _min_sum_processing(job_index, processing_times):
+    min_sum = np.inf
+    for i in range(processing_times.shape[1] - 1):
+        sum_for_pair = processing_times[job_index,
+                                        i] + processing_times[job_index, i + 1]
+        if sum_for_pair < min_sum:
+            min_sum = sum_for_pair
+    return min_sum
+
+
+def _calculate_priority(job_index, processing_times):
+    diff = float(processing_times[job_index, 0] -
+                 processing_times[job_index, -1])
+    sign = (diff > 0) - (diff < 0)
+    return sign / _min_sum_processing(job_index, processing_times)
+
+
+def gupta_heuristic(processing_times):
+    priorities = [_calculate_priority(i, processing_times)
+                  for i in range(processing_times.shape[0])]
+    total_times = [np.sum(processing_times[i])
+                   for i in range(processing_times.shape[0])]
+    sequence = sorted(range(len(priorities)), key=lambda k: (
+        priorities[k], total_times[k]))
+    return sequence, calculate_makespan(processing_times, sequence)
