@@ -264,7 +264,6 @@ def gupta_heuristic(processing_times):
 # Special
 
 def _johnsons_rule(machine1, machine2):
-
     artificial_jobs = list(zip(machine1, machine2))
 
     jobs_sorted = sorted(enumerate(artificial_jobs), key=lambda x: min(x[1]))
@@ -293,3 +292,59 @@ def special_heuristic(processing_times):
             best_sequence = sequence
 
     return best_sequence, makespan
+
+
+# ---------------------------------#
+
+# CDS
+
+
+def _johnson_method(processing_times):
+    jobs, machines = processing_times.shape
+    copy_processing_times = processing_times.copy()
+    maximum = processing_times.max() + 1
+    m1 = []
+    m2 = []
+
+    if machines != 2:
+        raise Exception("Johson method only works with two machines")
+
+    for i in range(jobs):
+        minimum = copy_processing_times.min()
+        position = np.where(copy_processing_times == minimum)
+
+        if position[1][0] == 0:
+            m1.append(position[0][0])
+        else:
+            m2.insert(0, position[0][0])
+
+        copy_processing_times[position[0][0]] = maximum
+
+    return m1+m2
+
+
+# python code for CDS heuristic
+
+def cds_heuristic(processing_times):
+    processing_times = processing_times.T
+    nb_machines, nb_jobs = processing_times.shape
+
+    best_cost = math.inf
+
+    machine_1_times = np.zeros((nb_jobs, 1))
+    machine_2_times = np.zeros((nb_jobs, 1))
+
+    # iterate through the nb_machines-1 auxiliary n-job 2-machines problems
+
+    for k in range(nb_machines - 1):
+        machine_1_times[:, 0] += processing_times[:][k]
+        machine_2_times[:, 0] += processing_times[:][-k-1]
+
+        jn_times = np.concatenate((machine_1_times, machine_2_times), axis=1)
+        seq = _johnson_method(jn_times)
+        cost = calculate_makespan(jn_times, seq)
+        if cost < best_cost:
+            best_cost = cost
+            best_seq = seq
+
+    return best_seq, calculate_makespan(processing_times.T, best_seq)
