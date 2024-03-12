@@ -164,4 +164,67 @@ def run_palmer(dist_mat):
 
     return ordre_opt, makespan
 
-# Remember to provide dist_mat as a NumPy array with dimensions [nb_jobs, nb_machines] to run this function.
+
+# ---------------------------------#
+
+# PMSKE
+
+
+def _AVG(processing_times):
+    return np.mean(processing_times, axis=1)
+
+
+def _STD(processing_times):
+    return np.std(processing_times, axis=1, ddof=1)
+
+
+def _skewness_SKE(processing_times):
+    """
+    Calculates the skewness of job processing times across machines.
+    Return : Skewness values for each job
+
+    """
+    num_jobs, num_machines = processing_times.shape
+    skewness_values = []
+
+    for i in range(num_jobs):
+        avg_processing_time = np.mean(processing_times[i, :])
+        numerateur = 0
+        denominateur = 0
+
+        for j in range(num_machines):
+            som = (processing_times[i, j] - avg_processing_time)
+            numerateur += som ** 3
+            denominateur += som ** 2
+
+        numerateur *= (1 / num_machines)
+        denominateur = (np.sqrt(denominateur * (1 / num_machines))) ** 3
+
+        skewness_values.append(numerateur / denominateur)
+
+    return np.array(skewness_values)
+
+
+def PRSKE(processing_times):
+    """
+    Calculates the job sequence based on the PRSKE priority rule
+
+    """
+    avg = _AVG(processing_times)   # Calculate average processing times
+
+    # Calculate standard deviation processing times
+    std = _STD(processing_times)
+
+    skw = _skewness_SKE(processing_times)  # Calculate Skewness
+
+    order = skw + std + avg
+
+    # Sort in descending order
+    sorted_order = sorted(
+        zip(order, list(range(processing_times.shape[0]))), reverse=True)
+
+    sequence = [job for _, job in sorted_order]
+
+    makespan = calculate_makespan(processing_times, sequence)
+
+    return sequence,  makespan
