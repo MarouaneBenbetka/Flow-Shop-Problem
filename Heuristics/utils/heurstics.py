@@ -259,3 +259,37 @@ def gupta_heuristic(processing_times):
     sequence = sorted(range(len(priorities)), key=lambda k: (
         priorities[k], total_times[k]))
     return sequence, calculate_makespan(processing_times, sequence)
+
+
+# Special
+
+def _johnsons_rule(machine1, machine2):
+
+    artificial_jobs = list(zip(machine1, machine2))
+
+    jobs_sorted = sorted(enumerate(artificial_jobs), key=lambda x: min(x[1]))
+    U = [job for job in jobs_sorted if job[1][0] < job[1][1]]
+    V = [job for job in jobs_sorted if job[1][0] >= job[1][1]]
+
+    sequence = [job[0] for job in U] + [job[0] for job in reversed(V)]
+    return sequence
+
+
+def special_heuristic(processing_times):
+    _, n_machines = processing_times.shape
+    best_sequence = None
+    best_makespan = float('inf')
+
+    for k in range(1, n_machines - 1):
+        weights_front = np.array([n_machines - i for i in range(k)])
+        weights_back = np.array([i + 1 for i in range(k, n_machines)])
+        AM1 = processing_times[:, :k].dot(weights_front)
+        AM2 = processing_times[:, k:].dot(weights_back)
+
+        sequence = _johnsons_rule(AM1, AM2)
+        makespan = calculate_makespan(processing_times, sequence)
+        if makespan < best_makespan:
+            best_makespan = makespan
+            best_sequence = sequence
+
+    return best_sequence, makespan
