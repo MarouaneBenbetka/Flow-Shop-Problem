@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 
 def calculate_makespan(processing_times, sequence):
@@ -21,7 +22,6 @@ def generate_gantt_chart(current_instance, solution):
     df = pd.DataFrame(columns=['Machine', 'Job', 'Start', 'Finish'])
 
     machines, jobs = current_instance.shape
-    machine_times = np.zeros((machines, jobs))
     start_time_m = np.zeros(machines)
     for job in solution:
 
@@ -29,16 +29,13 @@ def generate_gantt_chart(current_instance, solution):
             start_time = start_time_m[machine_index]
             if machine_index > 0:
                 start_time = max(start_time, start_time_m[machine_index-1])
-            end_time = start_time + \
-                current_instance[machine_index, job]
+            end_time = start_time + current_instance[machine_index, job]
             start_time_m[machine_index] = end_time
 
             df = pd.concat([df, pd.DataFrame({'Machine': f'Machine {machine_index + 1}',
                                               'Job': f'Job {job + 1}',
                                               'Start': start_time,
                                               'Finish': end_time}, index=[0])], ignore_index=True)
-
-            machine_times[machine_index, job] = end_time
 
     colors = plt.cm.tab10.colors
     for i, machine_index in enumerate(range(machines)):
@@ -49,4 +46,11 @@ def generate_gantt_chart(current_instance, solution):
     plt.xlabel('Time')
     plt.yticks([i * 10 + 4.5 for i in range(machines)],
                [f'Machine {i + 1}' for i in range(machines)])
-    plt.show()
+
+    # Generate a unique ID for the file based on the current timestamp
+    unique_id = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"images/gantt_chart_{unique_id}.png"
+    plt.savefig(filename, bbox_inches='tight')
+    plt.close()  # Close the figure to prevent it from displaying in notebooks or IPython environments
+
+    return filename
