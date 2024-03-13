@@ -348,3 +348,43 @@ def cds_heuristic(processing_times):
             best_seq = seq
 
     return best_seq, calculate_makespan(processing_times.T, best_seq)
+
+
+# ---------------------------------#
+
+# kusiak
+
+
+def kusiak(flowshop):
+    """
+    Kusiak algorithm for the flowshop scheduling problem.
+
+    Parameters:
+        flowshop (numpy.ndarray): Flowshop matrix where rows represent jobs and columns represent machines.
+
+    Returns:
+        numpy.ndarray: Sequence of jobs in the optimal order.
+    """
+    num_jobs, num_machines = flowshop.shape
+
+    # Calculate initial completion times for each job on each machine
+    completion_times = np.zeros((num_jobs, num_machines))
+    for i in range(num_jobs):
+        completion_times[i][0] = flowshop[i][0]
+    for j in range(1, num_machines):
+        completion_times[0][j] = completion_times[0][j-1] + flowshop[0][j]
+    for i in range(1, num_jobs):
+        for j in range(1, num_machines):
+            completion_times[i][j] = max(
+                completion_times[i-1][j], completion_times[i][j-1]) + flowshop[i][j]
+
+    # Create a list of jobs
+    jobs = list(range(num_jobs))
+
+    # Sort jobs based on the total completion time across machines
+    jobs.sort(key=lambda job: sum(completion_times[job, :]))
+
+    # Convert the sorted job list to numpy array for easy indexing
+    sorted_jobs = np.array(jobs)
+
+    return sorted_jobs, calculate_makespan(flowshop, sorted_jobs)
