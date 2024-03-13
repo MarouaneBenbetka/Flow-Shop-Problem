@@ -3,43 +3,73 @@ import numpy as np
 import time
 import pandas as pd
 from utils.ui import *
-
+from utils.heurstics import neh_algorithm, ham_heuristic, cds_heuristic, gupta_heuristic, run_palmer, PRSKE, special_heuristic
+from utils.benchmarks import benchmarks
+from utils.utils import generate_gantt_chart
 # Placeholder for your algorithm execution function
 # This should return a 1D array, execution time, and an image path
 
 
-def run_algorithm(algo_name, input_data):
-    start_time = time.time()
-    # Simulate processing with a sleep
-    time.sleep(np.random.rand())
-    output_data = np.random.randint(0, 100, size=25).tolist()  # Example output
-    execution_time = time.time() - start_time
-    # Example count (you can adjust this to be whatever metric you need)
-    count = len(output_data)
+def run_algorithm(algo, input_data):
+    start_time = time.perf_counter()
+    output_data, makespan = algo["algo"](input_data)
+    end_time = time.perf_counter()
+    execution_time_micros = (end_time - start_time) * 1e3
+
+    image_path = generate_gantt_chart(input_data.T, output_data)
     # Placeholder image path
-    image_path = "./images/Screenshot 2024-03-01 212709.png"
-    return output_data, execution_time, count, image_path
+    return output_data, execution_time_micros, makespan, image_path
+
+
+def generate_statistics(benchmark_data):
+    stats = []
+    for algorithm in algorithms:
+        output_data, execution_time, makespan, _ = run_algorithm(
+            algorithm, benchmark_data)
+        stats.append({
+            "Algorithm": algorithm['name'],
+            "Execution Time (ms)": execution_time,
+            "Makespan": makespan
+        })
+    return pd.DataFrame(stats)
 
 
 # Define your algorithms names
 algorithms = [
-    "Algorithm 1",
-    "Algorithm 2",
-    "Algorithm 3",
-    "Algorithm 4",
-    "Algorithm 5",
-    "Algorithm 6",
-    "Algorithm 7",
-    "Algorithm 8",
-    "Algorithm 9"
+    {
+        "name": "NEH",
+        "algo":  neh_algorithm
+    },
+    {
+        "name": "Ham Heuristic",
+        "algo":  ham_heuristic
+    },
+    {
+        "name": "CDS Heuristic",
+        "algo":  cds_heuristic
+    },
+    {
+        "name": "Gupta Heuristic",
+        "algo":  gupta_heuristic
+    },
+    {
+        "name": "Run Palmer",
+        "algo":  run_palmer
+    },
+    {
+        "name": "PRSKE",
+        "algo":  PRSKE
+    },
+    {
+        "name": "Weighted CDS",
+        "algo": special_heuristic
+    }
+
+
 ]
 
 # List of benchmarks for demonstration
-benchmarks = {
-    "Benchmark 1": np.random.rand(5, 5),
-    "Benchmark 2": np.random.rand(7, 7),
-    # Add your actual benchmarks here
-}
+benchmarks_list = {f"Benchmark {i+1}": b for i, b in enumerate(benchmarks)}
 
 
 def main():
@@ -50,15 +80,16 @@ def main():
     cols = st.columns(3)
     selected_algorithm = st.session_state.get('selected_algorithm', None)
     for index, algorithm in enumerate(algorithms):
+        name, model = algorithm['name'], algorithm['algo']
         with cols[index % 3]:
-            if st.button(algorithm, key=algorithm, args=(algorithm,)):
+            if st.button(name, key=name, args=(name,)):
                 selected_algorithm = algorithm
                 st.session_state['selected_algorithm'] = algorithm
 
     if selected_algorithm:
-        st.header(f"Configurations for {selected_algorithm}")
+        st.header(f"Configurations for {selected_algorithm['name']}")
         option = st.radio(
-            "Input Method", ["Manual", "Generate Random", "Benchmark"])
+            "Input Method", ["Benchmark", "Manual", "Generate Random",])
 
         if option == "Manual":
             num_jobs = st.number_input(
