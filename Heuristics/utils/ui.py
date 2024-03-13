@@ -39,7 +39,15 @@ def generate_manual_input_grid(num_jobs, num_machines):
 
 
 def display_output_array(output_data):
-    st.write(np.array(output_data).reshape(-1, 1).T)
+    # Create a DataFrame from the output_data
+    df = pd.DataFrame([output_data])
+    # Adjust column names to start from 1
+    new_columns = {i: f"Job {i+1}" for i in range(len(df.columns))}
+    df.rename(columns=new_columns, inplace=True)
+    # Set the row name to "Jobs"
+    df.index = ["Jobs"]
+    # Display the DataFrame
+    st.write(df)
 
 
 def display_matrix(matrix):
@@ -55,23 +63,3 @@ def display_matrix(matrix):
 
     # Display the DataFrame in Streamlit
     st.dataframe(df)
-
-
-def generate_statistics_matrix():
-    # Placeholder for algorithms and their statistics
-    # Replace with your dynamic data retrieval or calculation
-    algorithms = ["Algorithm 1", "Algorithm 2",
-                  "Algorithm 3", "Algorithm 4", "Algorithm 5"]
-    execution_times = np.random.rand(
-        len(algorithms)) * 2  # Simulated execution times
-    makespans = np.random.randint(
-        100, 500, size=len(algorithms))  # Simulated makespans
-
-    # Creating a DataFrame to hold the statistics
-    statistics_df = pd.DataFrame({
-        "Algorithm Name": algorithms,
-        "Execution Time (s)": execution_times,
-        "Makespan": makespans
-    })
-
-    return statistics_df
