@@ -92,7 +92,7 @@ def generate_gantt_chart(processing_times, seq, interval=50, labeled=True):
                     label_x, label_y, job['name'][4:], ha='center', va='center', fontsize=10)
 
     unique_id = datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = f"./images/gantt_chart_{unique_id}.png"
+    filename = f"./Heuristics/images/gantt_chart_{unique_id}.png"
     plt.savefig(filename, bbox_inches='tight')
     plt.close()  # Close the figure to prevent it from displaying in notebooks or IPython environments
 
