@@ -352,48 +352,38 @@ def cds_heuristic(processing_times):
 
 # ---------------------------------#
 
-# kusiak
+# NRH
 
+def NRH(processing_times, shuffle_count=10):
+    transformed = np.vectorize(lambda row, col: processing_times[row, col]/(
+        np.exp(-col)))(*np.indices(processing_times.shape))
 
-def kusiak(flowshop):
-    """
-    Kusiak algorithm for the flowshop scheduling problem.
+    # sum for each job (sum each row elements)
+    transformed_sum = np.sum(transformed, axis=1)
+    print(transformed_sum)
+    transformed_reshaped = transformed_sum.reshape(-1)
 
-    Parameters:
-        flowshop (numpy.ndarray): Flowshop matrix where rows represent jobs and columns represent machines.
+    initial_order = list(sorted(range(
+        processing_times.shape[0]), key=lambda x: transformed_reshaped[x], reverse=True))
 
-    Returns:
-        numpy.ndarray: Sequence of jobs in the optimal order.
-    """
-    num_jobs, num_machines = flowshop.shape
+    current_make_span = calculate_makespan(processing_times, initial_order)
+    current_order = initial_order
 
-    # Calculate initial completion times for each job on each machine
-    completion_times = np.zeros((num_jobs, num_machines))
-    for i in range(num_jobs):
-        completion_times[i][0] = flowshop[i][0]
-    for j in range(1, num_machines):
-        completion_times[0][j] = completion_times[0][j-1] + flowshop[0][j]
-    for i in range(1, num_jobs):
-        for j in range(1, num_machines):
-            completion_times[i][j] = max(
-                completion_times[i-1][j], completion_times[i][j-1]) + flowshop[i][j]
+    for i in range(shuffle_count):
+        copy = current_order.copy()
 
-    # Create a list of jobs
-    jobs = list(range(num_jobs))
+        np.random.shuffle(copy)
+        cost = calculate_makespan(processing_times, copy)
+        if cost < current_make_span:
+            current_make_span = cost
+            current_order = list(copy)
 
-    # Sort jobs based on the total completion time across machines
-    jobs.sort(key=lambda job: sum(completion_times[job, :]))
-
-    # Convert the sorted job list to numpy array for easy indexing
-    sorted_jobs = np.array(jobs)
-
-    return sorted_jobs, calculate_makespan(flowshop, sorted_jobs)
-
+    return current_order, current_make_span
 
 # ---------------------------------#
 
 
-#
+# CHEN
 
 def chen_heuristic(processing_times):
 

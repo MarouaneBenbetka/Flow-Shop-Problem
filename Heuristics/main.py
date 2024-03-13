@@ -3,7 +3,7 @@ import numpy as np
 import time
 import pandas as pd
 from utils.ui import *
-from utils.heurstics import neh_algorithm, ham_heuristic, cds_heuristic, gupta_heuristic, run_palmer, PRSKE, special_heuristic
+from utils.heurstics import neh_algorithm, ham_heuristic, cds_heuristic, gupta_heuristic, run_palmer, PRSKE, special_heuristic, NRH, chen_heuristic
 from utils.benchmarks import benchmarks
 from utils.utils import generate_gantt_chart
 # Placeholder for your algorithm execution function
@@ -16,7 +16,7 @@ def run_algorithm(algo, input_data):
     end_time = time.perf_counter()
     execution_time_micros = (end_time - start_time) * 1e3
 
-    image_path = generate_gantt_chart(input_data.T, output_data)
+    image_path = generate_gantt_chart(input_data, output_data)
     # Placeholder image path
     return output_data, execution_time_micros, makespan, image_path
 
@@ -41,19 +41,19 @@ algorithms = [
         "algo":  neh_algorithm
     },
     {
-        "name": "Ham Heuristic",
+        "name": "Ham",
         "algo":  ham_heuristic
     },
     {
-        "name": "CDS Heuristic",
+        "name": "CDS",
         "algo":  cds_heuristic
     },
     {
-        "name": "Gupta Heuristic",
+        "name": "Gupta",
         "algo":  gupta_heuristic
     },
     {
-        "name": "Run Palmer",
+        "name": "Palmer",
         "algo":  run_palmer
     },
     {
@@ -63,6 +63,14 @@ algorithms = [
     {
         "name": "Weighted CDS",
         "algo": special_heuristic
+    },
+    {
+        "name": "NRH",
+        "algo": NRH
+    },
+    {
+        "name": "Chen",
+        "algo": chen_heuristic
     }
 
 
@@ -78,11 +86,21 @@ def main():
     # Algorithm selection
     st.header("Select an Algorithm")
     cols = st.columns(3)
+    st.markdown("""
+        <style>
+        button[kind="secondary"] {
+            display: inline-block;
+            width: 100%;  # Makes the button fill the column width
+            padding: 20px;  # Adjust the padding as needed
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     selected_algorithm = st.session_state.get('selected_algorithm', None)
     for index, algorithm in enumerate(algorithms):
         name, model = algorithm['name'], algorithm['algo']
         with cols[index % 3]:
-            if st.button(name, key=name, args=(name,)):
+            if st.button(name, key=name, args=(name,), type="secondary"):
                 selected_algorithm = algorithm
                 st.session_state['selected_algorithm'] = algorithm
 
