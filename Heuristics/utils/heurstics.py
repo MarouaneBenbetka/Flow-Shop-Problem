@@ -388,3 +388,38 @@ def kusiak(flowshop):
     sorted_jobs = np.array(jobs)
 
     return sorted_jobs, calculate_makespan(flowshop, sorted_jobs)
+
+
+# ---------------------------------#
+
+
+#
+
+def chen_heuristic(processing_times):
+
+    num_jobs = processing_times.shape[0]
+
+    # Calcule de la somme de temps opératoires S(i) pour chaque tâche i
+    sum_processing_times = [sum(processing_times[i]) for i in range(num_jobs)]
+
+    job_max_sum = max(sum_processing_times)
+    job_c = sum_processing_times.index(job_max_sum)
+
+    remaining_jobs = [i for i in range(num_jobs) if i != job_c]
+
+    sorted_jobs_le = sorted(
+        remaining_jobs, key=lambda i: processing_times[i][0])
+
+    sorted_jobs_gt = sorted(
+        remaining_jobs, key=lambda i: processing_times[i][-1], reverse=True)
+
+    S_a = [i for i in sorted_jobs_le if processing_times[i]
+           [0] <= processing_times[i][-1]]
+    S_b = [i for i in sorted_jobs_gt if processing_times[i]
+           [0] > processing_times[i][-1]]
+
+    sequence = S_a + [job_c] + S_b
+
+    makespan = calculate_makespan(processing_times, sequence)
+
+    return sequence, makespan
