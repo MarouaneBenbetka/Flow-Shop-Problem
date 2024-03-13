@@ -6,6 +6,7 @@ from utils.ui import *
 from utils.heurstics import neh_algorithm, ham_heuristic, cds_heuristic, gupta_heuristic, run_palmer, PRSKE, special_heuristic, NRH, chen_heuristic
 from utils.benchmarks import benchmarks
 from utils.utils import generate_gantt_chart
+import os
 # Placeholder for your algorithm execution function
 # This should return a 1D array, execution time, and an image path
 
@@ -83,6 +84,7 @@ benchmarks_list = {f"Benchmark {i+1}": b for i, b in enumerate(benchmarks)}
 def main():
 
     print("Start")
+    print(os.getcwd())
     st.title("Algorithm Showcase")
 
     # Algorithm selection
