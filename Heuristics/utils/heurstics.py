@@ -360,7 +360,6 @@ def NRH(processing_times, shuffle_count=10):
 
     # sum for each job (sum each row elements)
     transformed_sum = np.sum(transformed, axis=1)
-    print(transformed_sum)
     transformed_reshaped = transformed_sum.reshape(-1)
 
     initial_order = list(sorted(range(
