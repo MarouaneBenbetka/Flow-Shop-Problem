@@ -17,39 +17,82 @@ def calculate_makespan(processing_times, sequence):
     return end_time[n_jobs][n_machines]
 
 
-def generate_gantt_chart(current_instance, solution):
-    plt.figure(figsize=(20, 12))
-    df = pd.DataFrame(columns=['Machine', 'Job', 'Start', 'Finish'])
+def generate_gantt_chart(processing_times, seq, interval=50, labeled=True):
+    data = processing_times.T
+    nb_jobs, nb_machines = processing_times.shape
+    schedules = np.zeros((nb_machines, nb_jobs), dtype=dict)
+    # schedule first job alone first
+    task = {"name": "job_{}".format(
+        seq[0]+1), "start_time": 0, "end_time": data[0][seq[0]]}
 
-    machines, jobs = current_instance.shape
-    start_time_m = np.zeros(machines)
-    for job in solution:
+    schedules[0][0] = task
+    for m_id in range(1, nb_machines):
+        start_t = schedules[m_id-1][0]["end_time"]
+        end_t = start_t + data[m_id][0]
+        task = {"name": "job_{}".format(
+            seq[0]+1), "start_time": start_t, "end_time": end_t}
+        schedules[m_id][0] = task
 
-        for machine_index in range(machines):
-            start_time = start_time_m[machine_index]
-            if machine_index > 0:
-                start_time = max(start_time, start_time_m[machine_index-1])
-            end_time = start_time + current_instance[machine_index, job]
-            start_time_m[machine_index] = end_time
+    for index, job_id in enumerate(seq[1::]):
+        start_t = schedules[0][index]["end_time"]
+        end_t = start_t + data[0][job_id]
+        task = {"name": "job_{}".format(
+            job_id+1), "start_time": start_t, "end_time": end_t}
+        schedules[0][index+1] = task
+        for m_id in range(1, nb_machines):
+            start_t = max(schedules[m_id][index]["end_time"],
+                          schedules[m_id-1][index+1]["end_time"])
+            end_t = start_t + data[m_id][job_id]
+            task = {"name": "job_{}".format(
+                job_id+1), "start_time": start_t, "end_time": end_t}
+            schedules[m_id][index+1] = task
 
-            df = pd.concat([df, pd.DataFrame({'Machine': f'Machine {machine_index + 1}',
-                                              'Job': f'Job {job + 1}',
-                                              'Start': start_time,
-                                              'Finish': end_time}, index=[0])], ignore_index=True)
+    # create a new figure
+    fig, ax = plt.subplots(figsize=(18, 8))
 
-    colors = plt.cm.tab10.colors
-    for i, machine_index in enumerate(range(machines)):
-        machine_df = df[df['Machine'] == f'Machine {machine_index + 1}']
-        plt.broken_barh([(start, end - start) for start, end in zip(machine_df['Start'], machine_df['Finish'])],
-                        (i * 10, 9), facecolors=[colors[j % 10] for j in range(jobs)], edgecolor='black')
+    # set y-axis ticks and labels
+    y_ticks = list(range(len(schedules)))
+    y_labels = [f'Machine {i+1}' for i in y_ticks]
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels(y_labels)
 
-    plt.xlabel('Time')
-    plt.yticks([i * 10 + 4.5 for i in range(machines)],
-               [f'Machine {i + 1}' for i in range(machines)])
+    # calculate the total time
+    total_time = max([job['end_time'] for proc in schedules for job in proc])
 
-    # Generate a unique ID for the file based on the current timestamp
+    # set x-axis limits and ticks
+    ax.set_xlim(0, total_time)
+    x_ticks = list(range(0, total_time+1, interval))
+    ax.set_xticks(x_ticks)
+
+    # set grid lines
+    ax.grid(True, axis='x', linestyle='--')
+
+    # create a color dictionary to map each job to a color
+    color_dict = {}
+    for proc in schedules:
+        for job in proc:
+            if job['name'] not in color_dict:
+                color_dict[job['name']] = (np.random.uniform(
+                    0, 1), np.random.uniform(0, 1), np.random.uniform(0, 1))
+
+    # plot the bars for each job on each processor
+    for i, proc in enumerate(schedules):
+        for job in proc:
+            start = job['start_time']
+            end = job['end_time']
+            duration = end - start
+            color = color_dict[job['name']]
+            ax.barh(i, duration, left=start, height=0.5,
+                    align='center', color=color, alpha=0.8)
+            if labeled:
+                # add job labels
+                label_x = start + duration/2
+                label_y = i
+                ax.text(
+                    label_x, label_y, job['name'][4:], ha='center', va='center', fontsize=10)
+
     unique_id = datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = f"images/gantt_chart_{unique_id}.png"
+    filename = f"./images/gantt_chart_{unique_id}.png"
     plt.savefig(filename, bbox_inches='tight')
     plt.close()  # Close the figure to prevent it from displaying in notebooks or IPython environments
 
