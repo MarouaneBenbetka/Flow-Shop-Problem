@@ -81,6 +81,8 @@ benchmarks_list = {f"Benchmark {i+1}": b for i, b in enumerate(benchmarks)}
 
 
 def main():
+
+    print("Start")
     st.title("Algorithm Showcase")
 
     # Algorithm selection
