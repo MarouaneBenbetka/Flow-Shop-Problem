@@ -111,28 +111,41 @@ def main():
 
         elif option == "Benchmark":
             benchmark_selection = st.selectbox(
-                "Choose a Benchmark", list(benchmarks.keys()))
-            input_data = benchmarks[benchmark_selection]
+                "Choose a Benchmark", list(benchmarks_list.keys()))
+            input_data = benchmarks_list[benchmark_selection]
             display_matrix(input_data)
 
         if st.button("Run Algorithm"):
-            output_data, execution_time, count, image_path = run_algorithm(
+            output_data, execution_time, makespan, image_path = run_algorithm(
                 selected_algorithm, input_data)
 
             st.subheader("Results")
             # Displaying the output matrix directly
             st.write("Output Matrix:")
-            st.write(output_data)
-            st.write(f"Execution Time: {execution_time:.2f} seconds")
-            st.write(f"Count: {count}")
+            display_output_array(output_data)
+            st.write(f"Execution Time: {execution_time:.4f} ms")
+            st.write(f"Makespan: {makespan}")
             st.image(image_path, caption="Output Image")
 
+        # Initial setup for session state to manage the display of the stats and benchmark selection
     if st.button("📊 Show General Statistics", help="Click to view general statistics about the algorithms"):
-        # Generate the statistics matrix
-        statistics_df = generate_statistics_matrix()
+        # Toggle visibility of the statistics and benchmark selection
+        st.session_state.show_statistics = not st.session_state.get(
+            'show_statistics', False)
 
-        st.subheader("General Statistics")
-        st.table(statistics_df)
+    if st.session_state.get('show_statistics', False):
+        benchmark_selection = st.selectbox("Choose a Benchmark for Statistics", list(
+            benchmarks_list.keys()), key='benchmark_selection')
+
+        if benchmark_selection:
+            with st.spinner('Calculating statistics... Please wait.'):
+                # Generate and display statistics for the selected benchmark
+                benchmark_data = benchmarks_list[benchmark_selection]
+
+                statistics_df = generate_statistics(benchmark_data)
+
+                st.subheader("General Statistics")
+                st.table(statistics_df)
 
 
 if __name__ == "__main__":
