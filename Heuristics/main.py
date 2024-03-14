@@ -31,10 +31,12 @@ def generate_statistics(benchmark_data):
             "Algorithm": algorithm['name'],
             "Execution Time (ms)": execution_time,
             "Makespan": makespan,
-            "RDP": f'{round((makespan - benchmark_data["upper-bound"]) / (benchmark_data["upper-bound"]) * 100,2)}%'
+            "RDP": round((makespan - benchmark_data["upper-bound"]) / (benchmark_data["upper-bound"]) * 100, 2)
         })
-    image_path = generate_histogram(stats)
-    return pd.DataFrame(sorted(stats, key=lambda x: x["Makespan"])), image_path
+
+    sorted_stats = sorted(stats, key=lambda x: x["Makespan"])
+    image_path = generate_histogram(sorted_stats)
+    return pd.DataFrame(sorted_stats), image_path
 
 
 # Define your algorithms names
