@@ -5,7 +5,7 @@ import pandas as pd
 from utils.ui import *
 from utils.heurstics import neh_algorithm, ham_heuristic, cds_heuristic, gupta_heuristic, run_palmer, PRSKE, special_heuristic, NRH, chen_heuristic
 from utils.benchmarks import benchmarks
-from utils.utils import generate_gantt_chart
+from utils.utils import generate_gantt_chart, generate_histogram
 import os
 # Placeholder for your algorithm execution function
 # This should return a 1D array, execution time, and an image path
@@ -33,7 +33,8 @@ def generate_statistics(benchmark_data):
             "Makespan": makespan,
             "RDP": f'{round((makespan - benchmark_data["upper-bound"]) / (benchmark_data["upper-bound"]) * 100,2)}%'
         })
-    return pd.DataFrame(sorted(stats, key=lambda x: x["Makespan"]))
+    image_path = generate_histogram(stats)
+    return pd.DataFrame(sorted(stats, key=lambda x: x["Makespan"])), image_path
 
 
 # Define your algorithms names
@@ -167,13 +168,15 @@ def main():
         if benchmark_selection:
             with st.spinner('Calculating statistics... Please wait.'):
                 # Generate and display statistics for the selected benchmark
-                statistics_df = generate_statistics(
-                    benchmarks_list[benchmark_selection])
+                benchmark_data = benchmarks_list[benchmark_selection]
+
+                statistics_df, image = generate_statistics(benchmark_data)
 
                 st.subheader("General Statistics")
                 st.write(
                     f"Upper-bound: {benchmarks_list[benchmark_selection]['upper-bound']}")
                 st.table(statistics_df)
+                st.image(image, caption="General statistics graph")
 
 
 if __name__ == "__main__":

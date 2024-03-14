@@ -102,3 +102,45 @@ def generate_gantt_chart(processing_times, seq, interval=50, labeled=True):
     plt.close()  # Close the figure to prevent it from displaying in notebooks or IPython environments
 
     return filename
+
+
+def generate_histogram(tab_stats):
+
+    RDP = [stat["RDP"] for stat in tab_stats]
+    Execution_time = [stat["Execution Time (ms)"] for stat in tab_stats]
+
+    fig, ax = plt.subplots(figsize=(18, 10))
+
+    index = np.arange(len(tab_stats))
+    bar_width = 0.35
+
+    rects1 = ax.bar(index, RDP, bar_width,
+                    color='#D9731A',
+                    label='RDP')
+
+    rects2 = ax.bar(index + bar_width, Execution_time, bar_width,
+                    color='#2A2359',
+                    label='Execution Time')
+
+    ax.set_xlabel('Heuristics')
+    ax.set_ylabel('RDP / Execution Time (ms)')
+   
+
+    ax.set_xticks(index + bar_width / 2)
+    ax.set_xticklabels([stat['Algorithm'] for stat in tab_stats])
+
+    ax.legend()
+
+    unique_id = datetime.now().strftime("%Y%m%d%H%M%S")
+    folder = os.path.join(os.getcwd(), "Heuristics", "histograms")
+
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    filename = os.path.join(folder, f"Histogram_{unique_id}.png")
+    plt.savefig(filename, bbox_inches='tight')
+    plt.close()  # Close the figure to prevent it from displaying in notebooks or IPython environments
+
+    return filename
+
+    
