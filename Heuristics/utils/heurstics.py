@@ -297,8 +297,6 @@ def special_heuristic(processing_times):
 # ---------------------------------#
 
 # CDS
-
-
 def _johnson_method(processing_times):
     jobs, machines = processing_times.shape
     copy_processing_times = processing_times.copy()
@@ -356,11 +354,10 @@ def cds_heuristic(processing_times):
 
 def NRH(processing_times, shuffle_count=10):
     transformed = np.vectorize(lambda row, col: processing_times[row, col]/(
-        np.exp(-col)))(*np.indices(processing_times.shape))
+        np.exp(-col*1.6)))(*np.indices(processing_times.shape))
 
     # sum for each job (sum each row elements)
     transformed_sum = np.sum(transformed, axis=1)
-    print(transformed_sum)
     transformed_reshaped = transformed_sum.reshape(-1)
 
     initial_order = list(sorted(range(
@@ -369,14 +366,7 @@ def NRH(processing_times, shuffle_count=10):
     current_make_span = calculate_makespan(processing_times, initial_order)
     current_order = initial_order
 
-    for i in range(shuffle_count):
-        copy = current_order.copy()
-
-        np.random.shuffle(copy)
-        cost = calculate_makespan(processing_times, copy)
-        if cost < current_make_span:
-            current_make_span = cost
-            current_order = list(copy)
+    # for i in range(sxorder = list(copy)
 
     return current_order, current_make_span
 

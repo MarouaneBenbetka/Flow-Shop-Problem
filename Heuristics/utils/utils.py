@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import os
 
 
 def calculate_makespan(processing_times, sequence):
@@ -92,7 +93,11 @@ def generate_gantt_chart(processing_times, seq, interval=50, labeled=True):
                     label_x, label_y, job['name'][4:], ha='center', va='center', fontsize=10)
 
     unique_id = datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = f"./images/gantt_chart_{unique_id}.png"
+
+    folder = os.path.join(os.getcwd(), "Heuristics", "images")
+
+    filename = os.path.join(
+        folder, f"gantt_chart_{unique_id}.png")
     plt.savefig(filename, bbox_inches='tight')
     plt.close()  # Close the figure to prevent it from displaying in notebooks or IPython environments
 

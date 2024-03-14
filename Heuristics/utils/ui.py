@@ -34,8 +34,8 @@ def generate_manual_input_grid(num_jobs, num_machines):
                     else:
                         input_data[i-1][j-1] = int(st.text_input(
                             f"", value="0", key=f"job-{i}-machine-{j}"))
-
-    return input_data
+        print("input_data", input_data)
+    return np.array(input_data)
 
 
 def display_output_array(output_data):
