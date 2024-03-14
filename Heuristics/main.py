@@ -26,11 +26,13 @@ def generate_statistics(benchmark_data):
     stats = []
     for algorithm in algorithms:
         output_data, execution_time, makespan, _ = run_algorithm(
-            algorithm, benchmark_data)
+            algorithm, benchmark_data["data"])
         stats.append({
             "Algorithm": algorithm['name'],
             "Execution Time (ms)": execution_time,
-            "Makespan": makespan
+            "Makespan": makespan,
+            "Upper-bound": benchmark_data["upper-bound"],
+            "RDP": (makespan - benchmark_data["lower-bound"]) / (benchmark_data["upper-bound"] - benchmark_data["lower-bound"])
         })
     return pd.DataFrame(stats)
 
@@ -104,6 +106,7 @@ def main():
         st.session_state.show_statistics = not st.session_state.get(
             'show_statistics', False)
         selected_algorithm = None
+        st.session_state['selected_algorithm'] = None
 
     selected_algorithm = st.session_state.get('selected_algorithm', None)
     for index, algorithm in enumerate(algorithms):
@@ -139,7 +142,7 @@ def main():
         elif option == "Benchmark":
             benchmark_selection = st.selectbox(
                 "Choose a Benchmark", list(benchmarks_list.keys()))
-            input_data = benchmarks_list[benchmark_selection]
+            input_data = benchmarks_list[benchmark_selection]["data"]
             display_matrix(input_data)
 
         if st.button("Run Algorithm"):
