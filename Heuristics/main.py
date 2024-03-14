@@ -78,12 +78,11 @@ algorithms = [
 ]
 
 # List of benchmarks for demonstration
-benchmarks_list = {f"Benchmark {i+1}": b for i, b in enumerate(benchmarks)}
+benchmarks_list = {f"Instance {i+1}": b for i, b in enumerate(benchmarks)}
 
 
 def main():
 
-    print("Start")
     print(os.getcwd())
     st.title("Algorithm Showcase")
 
@@ -99,6 +98,12 @@ def main():
         }
         </style>
     """, unsafe_allow_html=True)
+
+    if (st.button("📊 Show General Statistics", type="secondary")):
+        # Toggle visibility of the statistics and benchmark selection
+        st.session_state.show_statistics = not st.session_state.get(
+            'show_statistics', False)
+        selected_algorithm = None
 
     selected_algorithm = st.session_state.get('selected_algorithm', None)
     for index, algorithm in enumerate(algorithms):
@@ -150,12 +155,8 @@ def main():
             st.image(image_path, caption="Output Image")
 
         # Initial setup for session state to manage the display of the stats and benchmark selection
-    if st.button("📊 Show General Statistics", help="Click to view general statistics about the algorithms"):
-        # Toggle visibility of the statistics and benchmark selection
-        st.session_state.show_statistics = not st.session_state.get(
-            'show_statistics', False)
 
-    if st.session_state.get('show_statistics', False):
+    if not selected_algorithm and st.session_state.get('show_statistics', False):
         benchmark_selection = st.selectbox("Choose a Benchmark for Statistics", list(
             benchmarks_list.keys()), key='benchmark_selection')
 
