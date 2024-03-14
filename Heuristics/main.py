@@ -155,6 +155,8 @@ def main():
             display_output_array(output_data)
             st.write(f"Execution Time: {execution_time:.4f} ms")
             st.write(f"Makespan: {makespan}")
+            st.write(
+                f"Upper-bound: {benchmarks_list[benchmark_selection]['upper-bound']}")
             st.image(image_path, caption="Output Image")
 
         # Initial setup for session state to manage the display of the stats and benchmark selection
