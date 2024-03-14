@@ -5,7 +5,7 @@ import pandas as pd
 from utils.ui import *
 from utils.heurstics import neh_algorithm, ham_heuristic, cds_heuristic, gupta_heuristic, run_palmer, PRSKE, special_heuristic, NRH, chen_heuristic
 from utils.benchmarks import benchmarks
-from utils.utils import generate_gantt_chart
+from utils.utils import generate_gantt_chart, generate_histogram
 import os
 # Placeholder for your algorithm execution function
 # This should return a 1D array, execution time, and an image path
@@ -22,6 +22,7 @@ def run_algorithm(algo, input_data):
     return output_data, execution_time_micros, makespan, image_path
 
 
+
 def generate_statistics(benchmark_data):
     stats = []
     for algorithm in algorithms:
@@ -32,9 +33,10 @@ def generate_statistics(benchmark_data):
             "Execution Time (ms)": execution_time,
             "Makespan": makespan,
             "Upper-bound": benchmark_data["upper-bound"],
-            "RDP": (makespan - benchmark_data["lower-bound"]) / (benchmark_data["upper-bound"] - benchmark_data["lower-bound"])
+            "RDP": (makespan - benchmark_data["upper-bound"]) / (benchmark_data["upper-bound"] )*100
         })
-    return pd.DataFrame(stats)
+    image_path = generate_histogram(stats)
+    return pd.DataFrame(stats), image_path
 
 
 # Define your algorithms names
@@ -168,10 +170,11 @@ def main():
                 # Generate and display statistics for the selected benchmark
                 benchmark_data = benchmarks_list[benchmark_selection]
 
-                statistics_df = generate_statistics(benchmark_data)
+                statistics_df, image = generate_statistics(benchmark_data)
 
                 st.subheader("General Statistics")
                 st.table(statistics_df)
+                st.image(image, caption="General statistics graph")
 
 
 if __name__ == "__main__":
