@@ -22,7 +22,6 @@ def run_algorithm(algo, input_data):
     return output_data, execution_time_micros, makespan, image_path
 
 
-
 def generate_statistics(benchmark_data):
     stats = []
     for algorithm in algorithms:
@@ -32,11 +31,12 @@ def generate_statistics(benchmark_data):
             "Algorithm": algorithm['name'],
             "Execution Time (ms)": execution_time,
             "Makespan": makespan,
-            "Upper-bound": benchmark_data["upper-bound"],
-            "RDP": (makespan - benchmark_data["upper-bound"]) / (benchmark_data["upper-bound"] )*100
+            "RDP": round((makespan - benchmark_data["upper-bound"]) / (benchmark_data["upper-bound"]) * 100, 2)
         })
-    image_path = generate_histogram(stats)
-    return pd.DataFrame(stats), image_path
+
+    sorted_stats = sorted(stats, key=lambda x: x["Makespan"])
+    image_path = generate_histogram(sorted_stats)
+    return pd.DataFrame(sorted_stats), image_path
 
 
 # Define your algorithms names
@@ -157,6 +157,8 @@ def main():
             display_output_array(output_data)
             st.write(f"Execution Time: {execution_time:.4f} ms")
             st.write(f"Makespan: {makespan}")
+            st.write(
+                f"Upper-bound: {benchmarks_list[benchmark_selection]['upper-bound']}")
             st.image(image_path, caption="Output Image")
 
         # Initial setup for session state to manage the display of the stats and benchmark selection
@@ -164,7 +166,7 @@ def main():
     if not selected_algorithm and st.session_state.get('show_statistics', False):
         benchmark_selection = st.selectbox("Choose a Benchmark for Statistics", list(
             benchmarks_list.keys()), key='benchmark_selection')
-
+        display_matrix(benchmarks_list[benchmark_selection]["data"])
         if benchmark_selection:
             with st.spinner('Calculating statistics... Please wait.'):
                 # Generate and display statistics for the selected benchmark
@@ -173,6 +175,8 @@ def main():
                 statistics_df, image = generate_statistics(benchmark_data)
 
                 st.subheader("General Statistics")
+                st.write(
+                    f"Upper-bound: {benchmarks_list[benchmark_selection]['upper-bound']}")
                 st.table(statistics_df)
                 st.image(image, caption="General statistics graph")
 

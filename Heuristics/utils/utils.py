@@ -94,7 +94,7 @@ def generate_gantt_chart(processing_times, seq, interval=50, labeled=True):
 
     unique_id = datetime.now().strftime("%Y%m%d%H%M%S")
 
-    folder = os.path.join(os.getcwd(), "Heuristics", "images")
+    folder = os.path.join(os.getcwd(), "Heuristics", "images", "gantt")
 
     filename = os.path.join(
         folder, f"gantt_chart_{unique_id}.png")
@@ -124,7 +124,6 @@ def generate_histogram(tab_stats):
 
     ax.set_xlabel('Heuristics')
     ax.set_ylabel('RDP / Execution Time (ms)')
-   
 
     ax.set_xticks(index + bar_width / 2)
     ax.set_xticklabels([stat['Algorithm'] for stat in tab_stats])
@@ -132,7 +131,7 @@ def generate_histogram(tab_stats):
     ax.legend()
 
     unique_id = datetime.now().strftime("%Y%m%d%H%M%S")
-    folder = os.path.join(os.getcwd(), "Heuristics", "histograms")
+    folder = os.path.join(os.getcwd(), "Heuristics", "images", "histograms")
 
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -142,5 +141,3 @@ def generate_histogram(tab_stats):
     plt.close()  # Close the figure to prevent it from displaying in notebooks or IPython environments
 
     return filename
-
-    
