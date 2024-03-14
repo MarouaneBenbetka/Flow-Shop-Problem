@@ -31,10 +31,9 @@ def generate_statistics(benchmark_data):
             "Algorithm": algorithm['name'],
             "Execution Time (ms)": execution_time,
             "Makespan": makespan,
-            "Upper-bound": benchmark_data["upper-bound"],
-            "RDP": (makespan - benchmark_data["lower-bound"]) / (benchmark_data["upper-bound"] - benchmark_data["lower-bound"])
+            "RDP": f'{round((makespan - benchmark_data["upper-bound"]) / (benchmark_data["upper-bound"]) * 100,2)}%'
         })
-    return pd.DataFrame(stats)
+    return pd.DataFrame(sorted(stats, key=lambda x: x["Makespan"]))
 
 
 # Define your algorithms names
@@ -164,15 +163,16 @@ def main():
     if not selected_algorithm and st.session_state.get('show_statistics', False):
         benchmark_selection = st.selectbox("Choose a Benchmark for Statistics", list(
             benchmarks_list.keys()), key='benchmark_selection')
-
+        display_matrix(benchmarks_list[benchmark_selection]["data"])
         if benchmark_selection:
             with st.spinner('Calculating statistics... Please wait.'):
                 # Generate and display statistics for the selected benchmark
-                benchmark_data = benchmarks_list[benchmark_selection]
-
-                statistics_df = generate_statistics(benchmark_data)
+                statistics_df = generate_statistics(
+                    benchmarks_list[benchmark_selection])
 
                 st.subheader("General Statistics")
+                st.write(
+                    f"Upper-bound: {benchmarks_list[benchmark_selection]['upper-bound']}")
                 st.table(statistics_df)
 
 

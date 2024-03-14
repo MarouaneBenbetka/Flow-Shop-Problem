@@ -66,17 +66,15 @@ def _ham_sol_1(Pi1: np.ndarray, Pi2: np.ndarray) -> list:
 def _ham_sol_2(Pi1: np.ndarray, Pi2: np.ndarray) -> list:
 
     diff = Pi2 - Pi1
-    according_pi1 = np.argwhere(diff >= 0)
-    according_pi2 = np.argwhere(diff < 0)
 
-    # Order Pi1 in increasing order
-    Pi1_sorted = np.sort(Pi1[according_pi1], axis=None).tolist()
-    Pi1_list = _indices_from_list_values(Pi1, Pi1_sorted)
+    Pi1_index = [(x, i) for i, x in enumerate(Pi1) if diff[i] >= 0]
+    Pi2_index = [(x, i) for i, x in enumerate(Pi2) if diff[i] < 0]
 
-    # Order Pi2 in decreasing order
-    Pi2_sorted = np.sort(Pi2[according_pi2], axis=None).tolist()
-    Pi2_sorted.reverse()
-    Pi2_list = _indices_from_list_values(Pi2, Pi2_sorted)
+    Pi1_sorted = sorted(Pi1_index, key=lambda x: x[0])
+    Pi2_sorted = sorted(Pi2_index, key=lambda x: x[0], reverse=True)
+
+    Pi1_list = [i for _, i in Pi1_sorted]
+    Pi2_list = [i for _, i in Pi2_sorted]
 
     return Pi1_list + Pi2_list
 
@@ -351,25 +349,46 @@ def cds_heuristic(processing_times):
 # ---------------------------------#
 
 # NRH
+def order_jobs_in_descending_order_of_decayed_completion_time(processing_times, alpha=1):
 
-def NRH(processing_times, shuffle_count=10):
-    transformed = np.vectorize(lambda row, col: processing_times[row, col]/(
-        np.exp(-col*1.6)))(*np.indices(processing_times.shape))
+    # total_completion_time = processing_times.sum(axis=1)
+    # return np.argsort(total_completion_time, axis=0).tolist()
+    transformed = np.vectorize(
+        lambda x, y: processing_times[x, y] / np.exp(-y * alpha))(*np.indices(processing_times.shape))
+    total_completion_time = transformed.sum(axis=1)
 
-    # sum for each job (sum each row elements)
-    transformed_sum = np.sum(transformed, axis=1)
-    transformed_reshaped = transformed_sum.reshape(-1)
+    return np.argsort(total_completion_time, axis=0).tolist()
 
-    initial_order = list(sorted(range(
-        processing_times.shape[0]), key=lambda x: transformed_reshaped[x], reverse=True))
+    # transformed = np.vectorize(
+    #     lambda x, y: processing_times[x, y] / np.exp(- alpha * (x)))(*np.indices(processing_times.shape))
+    # print(transformed)
+    # total_completion_time = transformed.sum(axis=1)
+    # print(total_completion_time)
+    # print('returning', np.argsort(total_completion_time, axis=1).tolist())
+    # return np.argsort(total_completion_time, axis=1).tolist()
 
-    current_make_span = calculate_makespan(processing_times, initial_order)
-    current_order = initial_order
 
-    # for i in range(sxorder = list(copy)
+def NRH(processing_times, alpha=1):
+    ordered_sequence = order_jobs_in_descending_order_of_decayed_completion_time(
+        processing_times, alpha=alpha)
 
-    return current_order, current_make_span
-
+    # Define the initial order
+    J1, J2 = ordered_sequence[:2]
+    sequence = [J1, J2] if calculate_makespan(processing_times, [
+        J1, J2]) < calculate_makespan(processing_times, [J2, J1]) else [J2, J1]
+    del ordered_sequence[:2]
+    # Add remaining jobs
+    for job in ordered_sequence:
+        Cmax = float('inf')
+        best_sequence = []
+        for i in range(len(sequence)+1):
+            new_sequence = _insertion(sequence, i, job)
+            Cmax_eval = calculate_makespan(processing_times, new_sequence)
+            if Cmax_eval < Cmax:
+                Cmax = Cmax_eval
+                best_sequence = new_sequence
+        sequence = best_sequence
+    return sequence, Cmax
 # ---------------------------------#
 
 
