@@ -208,7 +208,6 @@ def main():
     elif page == "Méthodes de voisinage":
         # Code for another page
         st.header("Méthodes de voisinage")
-        st.write("This is another page where you can add different content.")
         run_simulated_annealing_page()
 
 # =====================
