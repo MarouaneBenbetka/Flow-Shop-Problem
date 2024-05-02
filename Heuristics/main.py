@@ -222,12 +222,6 @@ def generate_initial_solution(method, data):
         return method(data)[0]
 
 
-def swap(solution, method):
-    # Implement the swap logic according to the specified method (random, best, first admissible)
-    # This function should modify the solution based on the swap strategy.
-    pass
-
-
 def run_simulated_annealing_page():
     st.header("Simulated Annealing Configuration")
 
