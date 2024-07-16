@@ -27,6 +27,8 @@ This section is divided into two parts:
 
 The `4-FSSP-DQN` directory presents a custom solution named FSSP-DQN, which is designed to find the best hyperparameters for a given set of metaheuristics. It uses Deep Q-Networks (DQN) to learn and optimize the hyperparameters dynamically. The `fssp_dqn.ipynb` notebook explains the implementation and application of this approach.
 
+For more details, refer to our [paper on FSSP-DQN](./github/Deep_Q_Networks_for_Hyperparameter_Tuning_in_Flow_Shop_Scheduling_Problem.pdf).
+
 ### 0-GUI
 
 The `0-GUI` directory contains a Streamlit application that integrates all the solutions into a single web interface for ease of use. This application allows users to interact with the various optimization techniques through a user-friendly website.
@@ -34,26 +36,6 @@ The `0-GUI` directory contains a Streamlit application that integrates all the s
 ## Benchmark Testing
 
 The algorithms were tested using the E. Taillard benchmarks, which can be found at [E. Taillard Benchmark Website](http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/ordonnancement.html).
-
-## Repository Structure
-
--   [0-GUI](0-GUI/)
-    -   [streamlit_app.py](0-GUI/streamlit_app.py)
--   [1-Branch&Bound](1-Branch&Bound/)
-    -   [data](1-Branch&Bound/data/)
-        -   [problem_instances.csv](1-Branch&Bound/data/problem_instances.csv)
-    -   [branch_and_bound.ipynb](1-Branch&Bound/branch_and_bound.ipynb)
--   [2-Heuristics](2-Heuristics/)
-    -   [utils](2-Heuristics/utils/)
-        -   [heuristics.ipynb](2-Heuristics/utils/heuristics.ipynb)
--   [3.1-MetaHeuristics](3.1-MetaHeuristics/)
-    -   [utils](3.1-MetaHeuristics/utils/)
-        -   [metaheuristics_voisinage.ipynb](3.1-MetaHeuristics/utils/metaheuristics_voisinage.ipynb)
--   [3.2-MetaHeuristics](3.2-MetaHeuristics/)
-    -   [utils](3.2-MetaHeuristics/utils/)
-        -   [population_based_metaheuristics.ipynb](3.2-MetaHeuristics/utils/population_based_metaheuristics.ipynb)
--   [4-FSSP-DQN](4-FSSP-DQN/)
-    -   [fssp_dqn.ipynb](4-FSSP-DQN/fssp_dqn.ipynb)
 
 ## Usage
 
@@ -66,7 +48,7 @@ The algorithms were tested using the E. Taillard benchmarks, which can be found 
 
 3. To run the Streamlit application, navigate to the `0-GUI` directory and execute:
     ```bash
-    streamlit run streamlit_app.py
+    streamlit run main.py
     ```
 
 ## Contributing
