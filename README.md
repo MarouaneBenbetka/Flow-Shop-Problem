@@ -41,8 +41,8 @@ The algorithms were tested using the E. Taillard benchmarks, which can be found 
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/your-username/fssp-optimization.git
-    cd fssp-optimization
+    git clone https://github.com/MarouaneBenbetka/Flow-Shop-Problem.git
+    cd Flow-Shop-Problem
     ```
 2. Navigate to the desired optimization method directory and open the corresponding Jupyter notebook to explore the implementations.
 
